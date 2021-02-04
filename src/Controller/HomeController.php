@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Movie;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Reflection;
+use ReflectionClass;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Interfaces\RouteCollectorInterface;
 use Twig\Environment;
@@ -25,6 +28,9 @@ class HomeController
         try {
             $data = $this->twig->render('home/index.html.twig', [
                 'trailers' => $this->fetchData(),
+                'datetime' => (new DateTime())->format('Y-m-d H:i'),
+                'controller' => (new ReflectionClass($this))->getShortName(),
+                'method' => __FUNCTION__
             ]);
         } catch (\Exception $e) {
             throw new HttpBadRequestException($request, $e->getMessage(), $e);
