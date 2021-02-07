@@ -25,6 +25,7 @@ class FetchDataCommand extends Command
     private LoggerInterface $logger;
     private string $source;
     private EntityManagerInterface $doctrine;
+    private $recordsCount = 10;
 
     /**
      * FetchDataCommand constructor.
@@ -46,7 +47,8 @@ class FetchDataCommand extends Command
     {
         $this
             ->setDescription('Fetch data from iTunes Movie Trailers')
-            ->addArgument('source', InputArgument::OPTIONAL, 'Overwrite source')
+            ->addArgument('count', InputArgument::OPTIONAL, 'Set records count to get', $this->recordsCount)
+            ->addArgument('source', InputArgument::OPTIONAL, 'Overwrite source')            
         ;
     }
 
@@ -56,6 +58,11 @@ class FetchDataCommand extends Command
         $source = self::SOURCE;
         if ($input->getArgument('source')) {
             $source = $input->getArgument('source');
+        }
+
+        $this->recordsCount = (int) $input->getArgument('count');
+        if ($this->recordsCount <= 0) {
+            throw new RuntimeException('Records count must be positive integer!');
         }
 
         if (!is_string($source)) {
@@ -89,6 +96,8 @@ class FetchDataCommand extends Command
         if (!property_exists($xml, 'channel')) {
             throw new RuntimeException('Could not find \'channel\' element in feed');
         }
+
+        $counter = 0;
         foreach ($xml->channel->item as $item) {
             $trailer = $this->getMovie((string) $item->title)
                 ->setTitle((string) $item->title)
@@ -98,6 +107,9 @@ class FetchDataCommand extends Command
             ;
 
             $this->doctrine->persist($trailer);
+            
+            $counter++;
+            if ($counter >= $this->recordsCount) break;
         }
 
         $this->doctrine->flush();

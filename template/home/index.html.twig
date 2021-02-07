@@ -12,7 +12,12 @@
         <table class="table table-bordered">
             {% for trailer in trailers %}
                 <tr>
-                    <td>{{ trailer.title }}</td>
+                    <td>
+                        <img src="{{ trailer.image }}"
+                             style="float: left; width: 100px; height: 100px; margin: 0 5px 0 0;">
+                        <h4>{{ trailer.title }}</h4>                    
+                        <a href="{{ trailer.link }}" target="_blank">{{ trailer.link }}</a>
+                    </td>
                 </tr>
             {% endfor %}
         </table>
