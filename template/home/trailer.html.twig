@@ -1,0 +1,17 @@
+{% extends 'main.html.twig' %}
+
+{% block title %}{{ trailers | length }} iTunes Movie trailers{% endblock %}
+
+{% block content %}
+    <div class="container pt-5">
+        <div class="row">
+            <div class="col-sm-2 pr-0"><img src="{{ trailer.image }}"></div>
+            <div class="col-sm-10 pl-0">
+                <h3>{{ trailer.title }}</h3>
+                <div>{{ trailer.description }}</div>
+                <div class="mt-2">Link: <a href="{{ trailer.link }}" target="_blank">{{ trailer.link }}</a></div>
+                <div class="mt-3"><a class="btn btn-success" href="{{ home }}">Back</a></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

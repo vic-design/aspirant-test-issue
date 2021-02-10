@@ -31,10 +31,10 @@ class FetchDataCommand extends Command
     /**
      * FetchDataCommand constructor.
      *
-     * @param ClientInterface        $httpClient
-     * @param LoggerInterface        $logger
+     * @param ClientInterface $httpClient
+     * @param LoggerInterface $logger
      * @param EntityManagerInterface $em
-     * @param string|null            $name
+     * @param string|null $name
      */
     public function __construct(ClientInterface $httpClient, LoggerInterface $logger, EntityManagerInterface $em, string $name = null)
     {
@@ -49,19 +49,18 @@ class FetchDataCommand extends Command
         $this
             ->setDescription('Fetch data from iTunes Movie Trailers')
             ->addArgument('count', InputArgument::OPTIONAL, 'Set records count to get', $this->recordsCount)
-            ->addArgument('source', InputArgument::OPTIONAL, 'Overwrite source')            
-        ;
+            ->addArgument('source', InputArgument::OPTIONAL, 'Overwrite source');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->logger->info(sprintf('Start %s at %s', __CLASS__, (string) date_create()->format(DATE_ATOM)));
+        $this->logger->info(sprintf('Start %s at %s', __CLASS__, (string)date_create()->format(DATE_ATOM)));
         $source = self::SOURCE;
         if ($input->getArgument('source')) {
             $source = $input->getArgument('source');
         }
 
-        $this->recordsCount = (int) $input->getArgument('count');
+        $this->recordsCount = (int)$input->getArgument('count');
         if ($this->recordsCount <= 0) {
             throw new RuntimeException('Records count must be positive integer!');
         }
@@ -83,7 +82,7 @@ class FetchDataCommand extends Command
         $data = $response->getBody()->getContents();
         $this->processXml($data);
 
-        $this->logger->info(sprintf('End %s at %s', __CLASS__, (string) date_create()->format(DATE_ATOM)));
+        $this->logger->info(sprintf('End %s at %s', __CLASS__, (string)date_create()->format(DATE_ATOM)));
 
         return 0;
     }
@@ -103,18 +102,19 @@ class FetchDataCommand extends Command
         foreach ($xml->channel->item as $item) {
             $html = $htmlDOM->load((string)$item->children($namespace)->encoded);
             $img = $html->find('img')[0]->src;
-            $trailer = $this->getMovie((string) $item->title)
-                ->setTitle((string) $item->title)
-                ->setDescription((string) $item->description)
-                ->setLink((string) $item->link)
-                ->setPubDate($this->parseDate((string) $item->pubDate))
-                ->setImage($img)
-            ;
+            $trailer = $this->getMovie((string)$item->title)
+                ->setTitle((string)$item->title)
+                ->setDescription((string)$item->description)
+                ->setLink((string)$item->link)
+                ->setPubDate($this->parseDate((string)$item->pubDate))
+                ->setImage($img);
 
             $this->doctrine->persist($trailer);
-            
+
             $counter++;
-            if ($counter >= $this->recordsCount) break;
+            if ($counter >= $this->recordsCount) {
+                break;
+            }
         }
 
         $this->doctrine->flush();
