@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Log\LoggerInterface;
+use simplehtmldom\HtmlDocument;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -90,7 +91,7 @@ class FetchDataCommand extends Command
     protected function processXml(string $data): void
     {
         $xml = (new \SimpleXMLElement($data))->children();
-//        $namespace = $xml->getNamespaces(true)['content'];
+        $namespace = $xml->getNamespaces(true)['content'];
 //        dd((string) $xml->channel->item[0]->children($namespace)->encoded);
 
         if (!property_exists($xml, 'channel')) {
@@ -98,12 +99,16 @@ class FetchDataCommand extends Command
         }
 
         $counter = 0;
+        $htmlDOM = new HtmlDocument();
         foreach ($xml->channel->item as $item) {
+            $html = $htmlDOM->load((string)$item->children($namespace)->encoded);
+            $img = $html->find('img')[0]->src;
             $trailer = $this->getMovie((string) $item->title)
                 ->setTitle((string) $item->title)
                 ->setDescription((string) $item->description)
                 ->setLink((string) $item->link)
                 ->setPubDate($this->parseDate((string) $item->pubDate))
+                ->setImage($img)
             ;
 
             $this->doctrine->persist($trailer);
