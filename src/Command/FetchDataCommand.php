@@ -26,7 +26,7 @@ class FetchDataCommand extends Command
     private LoggerInterface $logger;
     private string $source;
     private EntityManagerInterface $doctrine;
-    private $recordsCount = 10;
+    private int $recordsCount = 10;
 
     /**
      * FetchDataCommand constructor.
@@ -117,6 +117,13 @@ class FetchDataCommand extends Command
             }
         }
 
+        $this->doctrine->flush();
+
+        $trailers = $this->doctrine->getRepository(Movie::class)
+            ->findBy([], ['pubDate' => 'desc'], 999999999, $this->recordsCount);
+        foreach ($trailers as $trailer) {
+            $this->doctrine->remove($trailer);
+        }
         $this->doctrine->flush();
     }
 
